@@ -45,7 +45,7 @@ void hotp(const unsigned char *sbytes, time_t movingFactor, char *code)
 void proceed()
 {
   if (getenv("SSH_ORIGINAL_COMMAND") != NULL) {
-    execl(getenv("SSH_ORIGINAL_COMMAND"));
+    execl(getenv("SSH_ORIGINAL_COMMAND"), "-", NULL);
   } else {
     execl(getenv("SHELL"), "-", NULL);
   }
