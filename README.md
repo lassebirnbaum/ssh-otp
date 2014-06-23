@@ -4,9 +4,10 @@ ssh-otp
 Additions by lassebirnbaum:
 
 `gen-key` generates a valid 16 char secret 
-1. Outputs an url to a QR code generated with Google' chart api. Making it easy to scan 
+
+- Outputs an url to a QR code generated with Google' chart api. Making it easy to scan 
 with the Google Authenticator mobile app
-2. Outputs a "template" to insert into your authorized_keys file
+- Outputs a "template" to insert into your authorized_keys file
 
 `ssh-otp` has been changed to log events to syslog. This makes troubleshooting easier.
  
