@@ -1,5 +1,6 @@
 #include <string.h>
 #include <unistd.h>
+#include <syslog.h>
 
 #include <openssl/hmac.h>
 
@@ -44,6 +45,7 @@ void hotp(const unsigned char *sbytes, time_t movingFactor, char *code)
 
 void proceed()
 {
+  syslog(LOG_INFO, "Login accepted for %s",getenv("LOGNAME"));
   if (getenv("SSH_ORIGINAL_COMMAND") != NULL) {
     execl(getenv("SSH_ORIGINAL_COMMAND"), "-", NULL);
   } else {
@@ -55,22 +57,27 @@ int main(int argc, char *argv[])
 {
   int i;
   unsigned char sbytes[10];
-  char code[7], input[10];
+  char code[7];
+  char* input;
   time_t now;
 
+  syslog(LOG_INFO, "Login attempt for %s",getenv("LOGNAME"));
   if (argc < 2) {
-    exit(1);
-  }
-
-  fprintf(stderr, "Enter the validation code: ");
-  if (fgets(input, sizeof(input), stdin) == NULL) {
+   	syslog(LOG_ERR, "No secret given for %s",getenv("LOGNAME"));
     exit(1);
   }
 
   if (!b32decode(argv[1], sbytes)) {
+    syslog(LOG_ERR, "Secret not base32 format for %s",getenv("LOGNAME"));
     exit(1);
   }
 
+  input = getpass("Enter validation code: ");
+  if (input == NULL)  {
+    syslog(LOG_ERR, "No validation code give given for %s",getenv("LOGNAME"));
+    exit(1);
+  }
+  
   now = time(NULL);
   for (i = 0; i <= MAX_SKEW; i++) {
     hotp(sbytes, now / 30 + i, code);
@@ -82,8 +89,8 @@ int main(int argc, char *argv[])
       proceed();
     }
   }
-
-  fprintf(stderr, "Invalid");
+  syslog(LOG_ALERT, "Invalid attempt for %s",getenv("LOGNAME"));
+  fprintf(stderr, "Invalid validation key\n");
 
   return 1;
 }
